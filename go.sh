@@ -1,6 +1,6 @@
 #!/bin/bash
 
-clingo 10 generator.lp chords-general.lp prettify.py
+clingo 3 generator.lp chords-general.lp prettify.py
 
 
 # generate guitar chords things

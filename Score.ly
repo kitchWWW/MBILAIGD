@@ -8,7 +8,7 @@
 	subsubtitle = \markup{\italic{"
 %name
 "}}
-	subtitle = \markup{\italic{"Solo Percussion and Live Electronics"}}
+	subtitle = \markup{\italic{"Solo Percussion and Electronics"}}
 	composer = \markup{\column{" " "Brian Ellis" " "}}
 	arranger = " " 
 	tagline = \markup{\column{" " "www.brianellissound.com"}}
@@ -17,9 +17,9 @@
 \paper{
   indent = 0\cm
   left-margin = 2\cm
-  right-margin = 2\cm
-  top-margin = 2\cm
-  bottom-margin = 2\cm
+  right-margin = 1\cm
+  top-margin = 1\cm
+  bottom-margin = 1\cm
   max-systems-per-page = 4
   ragged-last-bottom = ##f
 

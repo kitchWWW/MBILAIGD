@@ -2,10 +2,11 @@
 import clingo
 import time as ts
 import os
-
+import random
 
 model_num = -1
 timestamp = -1
+dedication = "Meg"
 
 def output(solution):
 	global timestamp
@@ -63,6 +64,8 @@ def outputLilyStrings(lilyStrings,model_num):
 	fd = open('out/'+timestamp+'/out_'+str(model_num)+'.ly','w')
 	partCount = 0
 	for l in orig.readlines():
+		if "%name" in l:
+			l = "generated for "+dedication
 		if "%part" in l:
 			l = " ".join(lilyStrings[1-partCount])+"\n"
 			partCount+=1
@@ -74,33 +77,77 @@ def outputLilyStrings(lilyStrings,model_num):
 	os.chdir("../../")
 
 
+def isDeleteable(voices,v,p):
+	if p == 0 or p ==len(voices[v])-1:
+		return False
+	if voices[v][p] == 0:
+		return True
+	if voices[v][p] == voices[v][p-1]  and voices[v][p]== voices[v][p+1]:
+		return True
+	return False
+
+
+def formatForTime(sec):
+	secString = str(sec%60)
+	if len(secString) == 1:
+		secString = "0"+secString
+	return str(sec/60)+":"+secString
+
 def convertVoicesToLily(voices):
 	ret = []
+	trem = ":32"
+	
+	timeMarks = [formatForTime(x) for x in range(0,400)]
+
+
+
+	print timeMarks
 	for v in range(len(voices)):
 		lyString = []
 		for p in range(len(voices[v])):
-			if p > 0:
-				# if we have two rests in a row and change in the electronics, then pass
-				if voices[0][p] == voices[0][p-1] and voices[1][p] == voices[1][p-1] and voices[0][p] == 0 and voices[1][p] == 0 :
-					continue
+			# if it is a rest or the same on both sides, we can skip the whole chunk
+			if isDeleteable(voices,0,p) and isDeleteable(voices,1,p):
+			 	continue
 			# tie from prev note if continuation.
 			if p > 0 and voices[v][p]!=0:
 				if voices[v][p-1] != 0:
 					lyString.append("~")
-			lyString.append(lilyPitchFromString(voices[v][p])+"1:32")
-			needBang = False
-			if p > 0 and p < len(voices[v])-1 and voices[v][p]!=0:
-				if voices[v][p-1] == 0 and voices[v][p+1] == 0:
-					pass
-				elif voices[v][p-1] == 0:
-					lyString.append("\\<")
-					needBang = True
-				elif voices[v][p+1] == 0:
-					lyString.append("\\>")
-					needBang = True
-			if voices[v][p] != 0:
-				lyString.append("~")
-				lyString.append(lilyPitchFromString(voices[v][p])+"1:32")
+			if voices[v][p] == 0:
+				trem = ""
+			else:
+				trem = ":32"
+			timeFormat = timeMarks[2*p] #str(p)+":["+str(voices[0][p])+","+str(voices[1][p])+"]"
+			if v == 0:
+				timeFormat = ""
+			lyString.append(lilyPitchFromString(voices[v][p])+"1"+trem+" "+'^"{}"'.format(timeFormat))
+			
+			timeFormat = timeMarks[(2*p)+1]
+			if v == 0:
+				timeFormat = ""
+
+			needsSecond = True
+			if voices[0][p] == 0 and voices[1][p] ==0:
+				needsSecond = False
+			if needsSecond:
+				needBang = False
+				printRest = False
+				if p > 0 and p < len(voices[v])-1 and voices[v][p]!=0:
+					if voices[v][p-1] == 0 and voices[v][p+1] == 0:
+						pass
+					elif voices[v][p-1] == 0:
+						lyString.append("\\<")
+						needBang = True
+					elif voices[v][p+1] == 0:
+						lyString.append("\\>")
+						needBang = True
+						printRest = True
+				if printRest:
+					lyString.append(lilyPitchFromString(0)+"1"  +'^"{}"'.format(timeFormat))
+				else:
+					if voices[v][p] != 0:
+						lyString.append("~")
+		
+					lyString.append(lilyPitchFromString(voices[v][p])+"1"+trem +'^"{}"'.format(timeFormat))
 				if needBang:
 					lyString.append("\\!")
 		ret.append(lyString)
