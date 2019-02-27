@@ -5,13 +5,10 @@ import random
 import json
 
 model_num = -1
-timestamp = "12345"
+version = "5_41"
 
 def output(solution):
-	global timestamp
 	global model_num
-	if model_num == -1:
-		os.mkdir('out/'+timestamp)
 	model_num += 1
 	print("hi")
 	totalTime = 0;
@@ -39,7 +36,7 @@ def output(solution):
 			toprint.append(str(res[p][i]))
 		print "\t".join(toprint)
 	print "*********************"
-	outfd = open("out/"+timestamp+"/notes_"+str(model_num)+".txt",'w')
+	outfd = open("notes/"+version+"/notes_"+str(model_num)+".txt",'w')
 	outfd.write(json.dumps(res))
 	outfd.close()
 	# lilyStrings = convertVoicesToLily(res)

@@ -8,11 +8,11 @@ def lilyPitchFromString(p):
 	p = p-10
 	return ["f","a","c'","e'","g'"][p]
 
-def outputLilyStrings(lilyStrings,model_num):
+def outputLilyStrings(lilyStrings,timestamp,dedication):
 	print lilyStrings
 	print timestamp
 	orig = open("Score.ly",'r')
-	fd = open('out/'+timestamp+'/out_'+str(model_num)+'.ly','w')
+	fd = open('out/'+timestamp+'/out.ly','w')
 	partCount = 0
 	for l in orig.readlines():
 		if "%name" in l:
@@ -24,7 +24,7 @@ def outputLilyStrings(lilyStrings,model_num):
 	fd.truncate()
 	fd.close()
 	os.chdir('out/'+timestamp)
-	os.system("lilypond out_"+str(model_num)+" > /dev/null 2>&1  & ")
+	os.system("lilypond out.ly > /dev/null 2>&1  & ")
 	os.chdir("../../")
 
 
@@ -44,23 +44,15 @@ def formatForTime(sec):
 		secString = "0"+secString
 	return str(sec/60)+":"+secString
 
-def convertVoicesToLily(voices):
+def convertVoicesToLily(voices,timestamp):
 	ret = []
 	trem = ":32"
 	
-	timeOptions = range(5,545) #five seconds of silence, then 9 min run time
-	goodToGo = False
-	while goodToGo == False:
-		timeChoices = random.sample(timeOptions,len(voices[0]) * 2)
-		timeChoices = sorted(timeChoices)
-		goodToGo = True
-		for i in range(len(timeChoices)-1):
-			if timeChoices[i+1] - timeChoices[i] < 1:
-				goodToGo = False
-				print timeChoices
-				print i
+	fd = open("out/"+timestamp+"/timemark.txt")
+	timeOptions = json.loads(fd.readlines()[0])
+	fd.close()
 
-	timeMarks = [formatForTime(x) for x in timeChoices]
+	timeMarks = [formatForTime(x) for x in timeOptions]
 
 
 	print timeMarks
@@ -117,15 +109,11 @@ def convertVoicesToLily(voices):
 
 
 timestamp = "12345"
-model_num = 0
-dedication = "Meg"
-
-infd = open("out/"+timestamp+"/notes_"+str(model_num)+".txt",'r')
+dedication = ""
+infd = open("out/"+timestamp+"/notes.txt",'r')
 res = json.loads(infd.readlines()[0])
-lilyStrings = convertVoicesToLily(res)
-outputLilyStrings(lilyStrings,model_num)
-
-
+lilyStrings = convertVoicesToLily(res,timestamp)
+outputLilyStrings(lilyStrings,timestamp,dedication)
 
 
 
